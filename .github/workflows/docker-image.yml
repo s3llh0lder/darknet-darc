@@ -22,7 +22,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=ghcr.io/shellholder/darc
+          DOCKER_IMAGE=ghcr.io/shellholder/darknet-darc
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
