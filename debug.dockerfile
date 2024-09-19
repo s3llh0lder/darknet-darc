@@ -144,7 +144,7 @@ RUN set -x \
 COPY requirements.debug.txt /tmp
 RUN set -x \
  && python3 -m pip install -r /tmp/requirements.debug.txt --cache-dir /app/cache \
- && python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+ && python3 -m pip config set global.index-url https://pypi.org/simple \
  && python3 -m pip install ipython
 #CMD ["python3", "-m", "darc"]
 
