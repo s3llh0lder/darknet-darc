@@ -102,91 +102,91 @@ jobs:
             org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
           pull: true
 
-  docker-debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # docker-debug:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Prepare
-        id: prep
-        run: |
-          DOCKER_IMAGE=ghcr.io/s3llh0lder/darknet-darc
-          VERSION=noop
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            VERSION=nightly
-          elif [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
-            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
-              VERSION=edge
-            fi
-          elif [[ $GITHUB_REF == refs/pull/* ]]; then
-            VERSION=pr-${{ github.event.number }}
-          fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            MINOR=${VERSION%.*}
-            MAJOR=${MINOR%.*}
-            TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:latest"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
-          fi
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=tags::${TAGS}
-          echo ::set-output name=debug_tags::$(echo $TAGS | sed 's/darc/darc-debug/g')
-          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+  #     - name: Prepare
+  #       id: prep
+  #       run: |
+  #         DOCKER_IMAGE=ghcr.io/s3llh0lder/darknet-darc
+  #         VERSION=noop
+  #         if [ "${{ github.event_name }}" = "schedule" ]; then
+  #           VERSION=nightly
+  #         elif [[ $GITHUB_REF == refs/tags/* ]]; then
+  #           VERSION=${GITHUB_REF#refs/tags/}
+  #         elif [[ $GITHUB_REF == refs/heads/* ]]; then
+  #           VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+  #           if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
+  #             VERSION=edge
+  #           fi
+  #         elif [[ $GITHUB_REF == refs/pull/* ]]; then
+  #           VERSION=pr-${{ github.event.number }}
+  #         fi
+  #         TAGS="${DOCKER_IMAGE}:${VERSION}"
+  #         if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+  #           MINOR=${VERSION%.*}
+  #           MAJOR=${MINOR%.*}
+  #           TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:latest"
+  #         elif [ "${{ github.event_name }}" = "push" ]; then
+  #           TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+  #         fi
+  #         echo ::set-output name=version::${VERSION}
+  #         echo ::set-output name=tags::${TAGS}
+  #         echo ::set-output name=debug_tags::$(echo $TAGS | sed 's/darc/darc-debug/g')
+  #         echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v1
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
 
-      # - name: Login to DockerHub
-      #   if: github.event_name != 'pull_request'
-      #   uses: docker/login-action@v1
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #     # - name: Login to DockerHub
+  #     #   if: github.event_name != 'pull_request'
+  #     #   uses: docker/login-action@v1
+  #     #   with:
+  #     #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #     #     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }} # ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Login to GitHub Container Registry
+  #       uses: docker/login-action@v1
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.CR_PAT }} # ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+  #     - name: Cache Docker layers
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: /tmp/.buildx-cache
+  #         key: ${{ runner.os }}-buildx-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-buildx-
 
-      - name: Clean cache
-        id: docker_prune
-        run: |
-          docker system prune --volumes -f
+  #     - name: Clean cache
+  #       id: docker_prune
+  #       run: |
+  #         docker system prune --volumes -f
 
-      - name: Build and push
-        id: docker_build_debug
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/debug.dockerfile
-          platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.prep.outputs.debug_tags }}
-          labels: |
-            org.opencontainers.image.title=${{ github.event.repository.name }}
-            org.opencontainers.image.description=${{ github.event.repository.description }}
-            org.opencontainers.image.url=${{ github.event.repository.html_url }}
-            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
-            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
-          pull: true
+  #     - name: Build and push
+  #       id: docker_build_debug
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: .
+  #         file: ./docker/debug.dockerfile
+  #         platforms: linux/amd64
+  #         push: ${{ github.event_name != 'pull_request' }}
+  #         tags: ${{ steps.prep.outputs.debug_tags }}
+  #         labels: |
+  #           org.opencontainers.image.title=${{ github.event.repository.name }}
+  #           org.opencontainers.image.description=${{ github.event.repository.description }}
+  #           org.opencontainers.image.url=${{ github.event.repository.html_url }}
+  #           org.opencontainers.image.source=${{ github.event.repository.clone_url }}
+  #           org.opencontainers.image.version=${{ steps.prep.outputs.version }}
+  #           org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+  #           org.opencontainers.image.revision=${{ github.sha }}
+  #           org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
+  #         pull: true
