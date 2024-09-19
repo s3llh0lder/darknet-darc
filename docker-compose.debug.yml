@@ -2,7 +2,7 @@ version: '3'
 
 services:
   crawler:
-    image: jsnbzh/darc:debug
+    image: s3llh0lder/darknet-darc:debug
     build: &build
       context: .
       dockerfile: debug.dockerfile
@@ -161,7 +161,7 @@ services:
       - ./text:/app/text
 
   loader:
-    image: jsnbzh/darc:debug
+    image: s3llh0lder/darknet-darc:debug
     build: *build
     container_name: loader
     #ports: *ports
