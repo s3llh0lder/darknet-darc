@@ -2,7 +2,7 @@ version: '3'
 
 services:
   crawler:
-    image: s3llh0lder/darknet-darc:latest
+    image: ghcr.io/s3llh0lder/darknet-darc:latest
     build: &build
       context: .
       args:
@@ -137,7 +137,7 @@ services:
       - ./data/darc:/app/data
 
   loader:
-    image: s3llh0lder/darknet-darc:latest
+    image: ghcr.io/s3llh0lder/darknet-darc:latest
     build: *build
     container_name: loader
     #entrypoint: [ "bash", "/app/run.sh" ]
