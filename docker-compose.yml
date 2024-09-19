@@ -2,7 +2,7 @@ version: '3'
 
 services:
   crawler:
-    image: jsnbzh/darc:latest
+    image: s3llh0lder/darknet-darc:latest
     build: &build
       context: .
       args:
@@ -11,12 +11,7 @@ services:
     container_name: crawler
     #entrypoint: [ "bash", "/app/run.sh" ]
     command: [ "--type", "crawler",
-               "--file", "/app/text/tor.txt",
-               "--file", "/app/text/tor2web.txt",
-               "--file", "/app/text/i2p.txt",
-               "--file", "/app/text/zeronet.txt",
-               "--file", "/app/text/freenet.txt",
-               "--file", "/app/text/clinic.txt" ]
+               "--file", "/app/text/tor.txt"]
     environment:
       ## [PYTHON] force the stdout and stderr streams to be unbuffered
       PYTHONUNBUFFERED: 1
@@ -53,7 +48,7 @@ services:
       # save data submitssion
       SAVE_DB: 0
       # Redis URL
-      REDIS_URL: 'redis://:UCf7y123aHgaYeGnvLRasALjFfDVHGCz6KiR5Z0WC0DL4ExvSGw5SkcOxBywc0qtZBHVrSVx2QMGewXNP6qVow@redis'
+      REDIS_URL: 'redis://192.168.40.135'
       # database URL
       #DB_URL: 'mysql://root:b8y9dpz3MJSQtwnZIW77ydASBOYfzA7HJfugv77wLrWQzrjCx5m3spoaiqRi4kU52syYy2jxJZR3U2kwPkEVTA@db'
       # max pool
@@ -139,10 +134,10 @@ services:
     volumes: &volumes
       - ./text:/app/text
       - ./extra:/app/extra
-      - /data/darc:/app/data
+      - ./data/darc:/app/data
 
   loader:
-    image: jsnbzh/darc:latest
+    image: s3llh0lder/darknet-darc:latest
     build: *build
     container_name: loader
     #entrypoint: [ "bash", "/app/run.sh" ]
@@ -179,7 +174,7 @@ services:
       # data storage
       PATH_DATA: "data"
       # Redis URL
-      REDIS_URL: 'redis://:UCf7y123aHgaYeGnvLRasALjFfDVHGCz6KiR5Z0WC0DL4ExvSGw5SkcOxBywc0qtZBHVrSVx2QMGewXNP6qVow@redis'
+      REDIS_URL: 'redis://192.168.40.135'
       # database URL
       #DB_URL: 'mysql://root:b8y9dpz3MJSQtwnZIW77ydASBOYfzA7HJfugv77wLrWQzrjCx5m3spoaiqRi4kU52syYy2jxJZR3U2kwPkEVTA@db'
       # max pool

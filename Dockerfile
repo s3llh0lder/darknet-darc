@@ -51,7 +51,7 @@ RUN retry pty-install --stdin '6\n70' apt-get install --yes --no-install-recomme
         tzdata \
  #&& retry rename-jdk \
  && retry pty-install --stdin 'yes' apt-get install --yes \
-        oracle-java11-installer-local
+        openjdk-11-jdk
 RUN retry apt-get install --yes --no-install-recommends \
         sudo \
  && adduser --disabled-password --gecos '' ${DARC_USER} \
